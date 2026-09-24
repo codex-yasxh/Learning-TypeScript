@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
+import { stringify } from "node:querystring";
 console.log("Calorie Tracker");
 
 type Size = "small" | "medium" | "large";
@@ -205,9 +208,9 @@ try {
 
   const unitInput = process.argv[5];
 
-  if (command !== "add") {
-    throw new Error(`Unknown command: ${command}`);
-  }
+  // if (command !== "add") {
+  //   throw new Error(`Unknown command: ${command}`);
+  // }
   if (!foodName || !amountInput || !unitInput) {
     throw new Error("Usage: add <food> <amount> <unit>");
   }
@@ -227,8 +230,8 @@ try {
     throw new Error("Units must be appropriate");
   }
 
-
-  const foods: Food[] = [egg];
+  // const foods: Food[] = [egg]; earlier we did this. 
+  const foods = await readFoodData();
 
   const selectedFood = foods.find(
     (food) => food.name.toLowerCase() === foodName.toLowerCase(),
@@ -266,9 +269,91 @@ try {
 
   console.log(`Total calories: ${tracker.getTotalCalories()} kcal`);
 } catch (e) {
-    if (e instanceof Error) {
-        console.error(e.message);
-    }
+  if (e instanceof Error) {
+    console.error(e.message);
+  }
 }
 
 // phase 5 progress/flow - check file phase5.tldr
+
+// -----------------------------------------------------------------------------------------------
+// Phase 6 : Persistence
+//added on top : import { readFile } from 'node:fs/promises';
+// import { writeFile } from 'node:fs/promises';
+
+async function readFoodData(): Promise<Food[]> {
+  try {
+    const data = await readFile("src/data/foods.json", "utf-8");
+    const foods: Food[] = JSON.parse(data);
+    return foods;
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Error reading food data:", e.message);
+    }
+    return [];
+  }
+}
+
+async function saveFoodData(foods: Food[]): Promise<void> {
+    try {
+        const foodContent = JSON.stringify(foods, null, 2); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
+
+        await writeFile(
+            "src/data/foods.json",
+            foodContent,
+            "utf-8"
+        );
+    } catch (e) {
+        if (e instanceof Error) {
+            console.error("Error saving food data:", e.message);
+        }
+    }
+}
+// We have proven:
+
+// foods.json
+//    ↓
+// readFile()
+//    ↓
+// JSON.parse()
+//    ↓
+// Food[]
+
+// But there's one important Phase 6 requirement still missing: writing.
+
+// Right now we can:
+
+// READ : JSON → Food[]
+
+// We need to learn the reverse:=> "WRITE"
+
+//also, now Now your persistence loop is genuinely:
+
+//               READ
+// foods.json ───────────→ Food[]
+//                           │
+//                           │ modify
+//                           ↓
+//                          Food[]
+//                           │
+//                           │ JSON.stringify()
+//                           ↓
+//                        JSON text
+//                           │
+//                           │ writeFile()
+//                           ↓
+//                       foods.json
+//               WRITE
+//-----------------------------------------------------------------------------------------
+
+async function readEntries(): Promise<FoodEntry[]> {
+    // read entries.json
+    // JSON.parse()
+    // return FoodEntry[]
+}
+
+async function saveEntries(entries: FoodEntry[]): Promise<void> {
+    // JSON.stringify()
+    // write entries.json
+}
+

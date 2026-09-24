@@ -582,7 +582,7 @@ and starts becoming:
 
 "I understand why objects and abstractions exist."
 
- 1. Phase 8 — Service Layer
+## Phase 8 — Service Layer
 
 Now another problem appears.
 
@@ -637,7 +637,8 @@ Separation of concerns
 Business logic
 Dependency injection
 Composition
-11. Phase 9 — Goals
+
+## Phase 9 — Goals
 
 Now add:
 
@@ -659,7 +660,8 @@ Optional properties
 Null/undefined handling
 More complex domain modelling
 Updating persisted state
-12. Phase 10 — Today's Summary
+
+## Phase 10 — Today's Summary
 
 Implement:
 
@@ -711,7 +713,7 @@ and reason about how to transform it into:
     calories: 675,
     protein: 25
 }
-13. Phase 11 — TypeScript Features On Purpose
+## Phase 11 — TypeScript Features On Purpose
 
 Now we deliberately revisit features from your tutorial.
 
@@ -771,7 +773,7 @@ That's when we introduce generics.
 
 Not before.
 
- 1. Phase 12 — Validation & Error Handling
+## Phase 12 — Validation & Error Handling
 
 Now intentionally break the application.
 

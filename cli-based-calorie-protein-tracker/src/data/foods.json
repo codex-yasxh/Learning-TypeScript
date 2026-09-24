@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Apple",
+    "nutrition": {
+      "calories": 52,
+      "protein": 0.3
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "g"
+    },
+    "servingOptions": {
+      "name": "1 apple",
+      "amount": 182,
+      "unit": "g"
+    }
+  }
+]
