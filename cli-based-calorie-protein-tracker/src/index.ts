@@ -5,15 +5,13 @@ type Size = "small" | "medium" | "large";
 type Unit = "g" | "kg" | "ml" | "l" | "piece" | "packet";
 
 interface FoodEntry {
+  food: Food;
 
-    food : Food,
+  amount: number;
 
-    amount: number,
+  unit: Unit;
 
-    unit: Unit,
-
-    size? : Size
-
+  size?: Size;
 }
 
 // means:
@@ -27,35 +25,29 @@ interface FoodEntry {
 // So an entry doesn't duplicate the nutritional definition. It references the food being consumed.
 
 interface Food {
+  name: string;
 
-    name : string,
+  nutrition: {
+    calories: number;
 
-    nutrition : {
+    protein: number;
+  };
 
-        calories : number,
+  nutritionBasis: {
+    amount: number;
 
-        protein : number
+    unit: Unit;
+  };
 
-    },
+  servingOptions?: {
+    //optional
 
-    nutritionBasis : {
+    name: string;
 
-        amount: number,
+    amount: number;
 
-        unit: Unit
-
-    },
-
-    servingOptions?: {  //optional 
-
-        name: string,
-
-        amount: number,
-
-        unit: Unit
-
-    }
-
+    unit: Unit;
+  };
 }
 
 // Why Interface not class
@@ -88,7 +80,7 @@ interface Food {
 
 //--------------------------------------------------------
 
-// FoodEntry 
+// FoodEntry
 
 // nutritionBasis
 
@@ -110,236 +102,173 @@ interface Food {
 
 // and access both nutritionBasis and servingOptions.
 
-function calculateCalories(foodEntry : FoodEntry) : number { // no need to pass both interfaces, coz Foodentry already have the FOOD
+function calculateCalories(foodEntry: FoodEntry): number {
+  // no need to pass both interfaces, coz Foodentry already have the FOOD
 
-    const amount = getAmountInNutritionBasis(foodEntry);
+  const amount = getAmountInNutritionBasis(foodEntry);
 
-    return (
-
-        amount / foodEntry.food.nutritionBasis.amount * foodEntry.food.nutrition.calories
-
-    );
-
+  return (
+    (amount / foodEntry.food.nutritionBasis.amount) *
+    foodEntry.food.nutrition.calories
+  );
 }
 
 function getAmountInNutritionBasis(foodEntry: FoodEntry): number {
+  let weight: number;
 
-    let weight: number;
+  if (foodEntry.unit === foodEntry.food.nutritionBasis.unit) {
+    weight = foodEntry.amount;
+  } else if (foodEntry.food.servingOptions) {
+    weight = foodEntry.amount * foodEntry.food.servingOptions.amount;
+  } else {
+    throw new Error("Cannot convert food entry to nutrition basis");
 
-    if (foodEntry.unit === foodEntry.food.nutritionBasis.unit) {
+    // If we don't have any entry of that food, make sure we are going to add that kcals of that manually.
+  }
 
-        weight = foodEntry.amount;
-
-    } else if (foodEntry.food.servingOptions) {
-
-        weight =
-
-            foodEntry.amount *
-
-            foodEntry.food.servingOptions.amount;
-
-    } else {
-
-        throw new Error("Cannot convert food entry to nutrition basis");
-
-        // If we don't have any entry of that food, make sure we are going to add that kcals of that manually. 
-
-    }
-
-    return weight;
-
+  return weight;
 }
-
-
 
 // 1. Create a Food
 
 const egg: Food = {
+  name: "Egg",
 
-    name: "Egg",
+  nutrition: {
+    calories: 147,
 
-    nutrition: {
+    protein: 13.3,
+  },
 
-        calories: 147,
+  nutritionBasis: {
+    amount: 100,
 
-        protein: 13.3,
+    unit: "g",
+  },
 
-    },
+  servingOptions: {
+    name: "1 egg",
 
-    nutritionBasis: {
+    amount: 60,
 
-        amount: 100,
-
-        unit: "g",
-
-    },
-
-    servingOptions: {
-
-        name: "1 egg",
-
-        amount: 60,
-
-        unit: "g",
-
-    },
-
+    unit: "g",
+  },
 };
 
 //---------------------------------------------------------------------------------------------------------------------
 
 class FoodTracker {
+  private entries: FoodEntry[] = [];
 
-    private entries: FoodEntry[] = [];
+  private calorieGoal: number;
 
-    private calorieGoal: number;
+  constructor(calorieGoal: number) {
+    this.calorieGoal = calorieGoal;
+  }
 
-    constructor(calorieGoal: number) {
+  public add(entry: FoodEntry): void {
+    this.entries.push(entry);
+  }
 
-        this.calorieGoal = calorieGoal;
+  public getToday(): FoodEntry[] {
+    return this.entries;
+  }
 
+  public getTotalCalories(): number {
+    let total = 0;
+
+    for (const entry of this.entries) {
+      // calculate this entry's calories
+
+      const calories = calculateCalories(entry);
+
+      // add them to total
+
+      total += calories;
     }
 
-    public add(entry: FoodEntry): void {
-
-        this.entries.push(entry);
-
-    }
-
-    public getToday(): FoodEntry[] {
-
-        return this.entries;
-
-    }
-
-    public getTotalCalories(): number {
-
-        let total = 0;
-
-        for (const entry of this.entries) {
-
-            // calculate this entry's calories
-
-            const calories = calculateCalories(entry);
-
-            // add them to total
-
-            total += calories;
-
-        }
-
-        return total;
-
-    }
-
-
-
+    return total;
+  }
 }
 
-// Reading CLI inputs 
+// Reading CLI inputs
 
-console.log(process.argv); // remember all it's values are underlying strings so we'd need parsing and validation.
+// console.log(process.argv); // remember all it's values are underlying strings so we'd need parsing and validation.
 
 // console.log(process.argv[2]); // this is helpful coz to read what we passed in the command as an argument
 
-const command = process.argv[2];
+try {
+  const command = process.argv[2];
+  const foodName = process.argv[3];
 
-if (command !== "add") {
+  const amountInput = process.argv[4];
 
+  const unitInput = process.argv[5];
+
+  if (command !== "add") {
     throw new Error(`Unknown command: ${command}`);
-
-} else{
-
-    console.log(command);
-
-}
-
-const foodName = process.argv[3];
-
-const amountInput = process.argv[4];
-
-const unitInput = process.argv[5];
-
-if (!foodName || !amountInput || !unitInput) {
-
+  }
+  if (!foodName || !amountInput || !unitInput) {
     throw new Error("Usage: add <food> <amount> <unit>");
+  }
 
-}
+  const amount = Number(amountInput);
 
-const amount = Number(amountInput);
-
-if (Number.isNaN(amount)) {
-
+  if (Number.isNaN(amount)) {
     throw new Error("Amount must be a valid number");
-
-}
-if (amount <= 0) {
+  }
+  if (amount <= 0) {
     throw new Error("Amount must be greater than 0");
-}
+  }
 
-console.log(foodName);
+  const validUnits = ["g", "kg", "ml", "l", "piece", "packet"];
 
-console.log(amount);
-
-console.log(typeof amount);
-
-const validUnits = ["g", "kg", "ml", "l", "piece", "packet"];
-
-if (!validUnits.includes(unitInput)) {
+  if (!validUnits.includes(unitInput)) {
     throw new Error("Units must be appropriate");
-} else{
-    console.log(unitInput);
-}
+  }
 
 
+  const foods: Food[] = [egg];
 
+  const selectedFood = foods.find(
+    (food) => food.name.toLowerCase() === foodName.toLowerCase(),
+  );
 
-const foods: Food[] = [egg];
-
-const selectedFood = foods.find(
-
-    food => food.name.toLowerCase() === foodName.toLowerCase()
-
-);
-
-if (!selectedFood) {
-
+  if (!selectedFood) {
     throw new Error(`Food not found: ${foodName}`);
+  }
 
-}
+  // 2. Create a FoodEntry
 
-
-
-// 2. Create a FoodEntry
-
-const entry: FoodEntry = {
-
+  const entry: FoodEntry = {
     food: selectedFood,
 
     amount: amount,
 
     unit: unitInput as Unit,
+  };
 
-};
+  // 3. Calculate calories
 
-// 3. Calculate calories
+  const calories = calculateCalories(entry);
 
-const calories = calculateCalories(entry);
+  // 4. Print result
 
-// 4. Print result
+  console.log(`Added: ${entry.amount} ${entry.unit} ${entry.food.name}`);
 
-console.log(`Added: ${entry.amount} ${entry.unit} ${entry.food.name}`);
+  console.log(`Calories: ${calories} kcal`);
 
-console.log(`Calories: ${calories} kcal`);
+  const tracker = new FoodTracker(2500);
 
+  tracker.add(entry);
 
+  console.log(tracker.getToday());
 
-const tracker = new FoodTracker(2500);
+  console.log(`Total calories: ${tracker.getTotalCalories()} kcal`);
+} catch (e) {
+    if (e instanceof Error) {
+        console.error(e.message);
+    }
+}
 
-tracker.add(entry);
-
-console.log(tracker.getToday());
-
-console.log(`Total calories: ${tracker.getTotalCalories()} kcal`);
-
-// phase 5 progress/flow - check phase.tldr
+// phase 5 progress/flow - check file phase5.tldr
