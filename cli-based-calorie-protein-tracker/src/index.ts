@@ -165,8 +165,9 @@ class FoodTracker {
 
   private calorieGoal: number;
 
-  constructor(calorieGoal: number) {
+  constructor(calorieGoal: number, entries: FoodEntry[]) {
     this.calorieGoal = calorieGoal;
+    this.entries = entries;
   }
 
   public add(entry: FoodEntry): void {
@@ -230,7 +231,7 @@ try {
     throw new Error("Units must be appropriate");
   }
 
-  // const foods: Food[] = [egg]; earlier we did this. 
+  // const foods: Food[] = [egg]; earlier we did this.
   const foods = await readFoodData();
 
   const selectedFood = foods.find(
@@ -261,11 +262,15 @@ try {
 
   console.log(`Calories: ${calories} kcal`);
 
-  const tracker = new FoodTracker(2500);
+  const entries = await readEntries();
+
+  const tracker = new FoodTracker(2500, entries);
 
   tracker.add(entry);
 
   console.log(tracker.getToday());
+
+  await saveEntries(tracker.getToday());
 
   console.log(`Total calories: ${tracker.getTotalCalories()} kcal`);
 } catch (e) {
@@ -295,19 +300,15 @@ async function readFoodData(): Promise<Food[]> {
 }
 
 async function saveFoodData(foods: Food[]): Promise<void> {
-    try {
-        const foodContent = JSON.stringify(foods, null, 2); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
+  try {
+    const foodContent = JSON.stringify(foods, null, 2); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
 
-        await writeFile(
-            "src/data/foods.json",
-            foodContent,
-            "utf-8"
-        );
-    } catch (e) {
-        if (e instanceof Error) {
-            console.error("Error saving food data:", e.message);
-        }
+    await writeFile("src/data/foods.json", foodContent, "utf-8");
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Error saving food data:", e.message);
     }
+  }
 }
 // We have proven:
 
@@ -347,13 +348,34 @@ async function saveFoodData(foods: Food[]): Promise<void> {
 //-----------------------------------------------------------------------------------------
 
 async function readEntries(): Promise<FoodEntry[]> {
-    // read entries.json
-    // JSON.parse()
-    // return FoodEntry[]
+  // read entries.json
+  // JSON.parse()
+  // return FoodEntry[]
+  try {
+    const data = await readFile("src/data/entries.json", "utf-8");
+    const entries: FoodEntry[] = JSON.parse(data);
+    return entries;
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Error reading entries data:", e.message);
+    }
+    return []; // issue !! fix it later.
+  }
 }
 
 async function saveEntries(entries: FoodEntry[]): Promise<void> {
-    // JSON.stringify()
-    // write entries.json
+  // JSON.stringify()
+  // write entries.json
+  try {
+    const entryContent = JSON.stringify(entries, null, 2);
+
+    await writeFile("src/data/entries.json", entryContent, "utf-8");
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Error saving entries data:", e.message);
+    }
+  }
 }
 
+// one learning : we are using operations in our program for reading n writing so to our constructor read the info which is a sync operation
+// so we are using Load before constructor and also async IIFE is best.
