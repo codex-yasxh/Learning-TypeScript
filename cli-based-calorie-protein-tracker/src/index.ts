@@ -381,3 +381,31 @@ async function saveEntries(entries: FoodEntry[]): Promise<void> {
 
 // one learning : we are using operations in our program for reading n writing so to our constructor read the info which is a sync operation
 // so we are using Load before constructor and also async IIFE is best.
+
+
+//-------------------------------------------------- PHASE 7 ----------------------------------------------------------------
+
+interface FoodRepository{
+  save(entry: FoodEntry): Promise<void>;
+  findAll(): Promise<FoodEntry[]>;
+}
+
+class JsonFoodRepository implements FoodRepository {
+    private filePath: string;
+
+    constructor(filePath: string) {
+        this.filePath = filePath;
+    }
+
+    async findAll(): Promise<FoodEntry[]> {
+      const data = await readFile(this.filePath, "utf-8");
+      const entries: FoodEntry[] = JSON.parse(data);
+      return entries;
+    }
+
+    async save(entry: FoodEntry): Promise<void> {
+      
+    }
+}
+
+const repository = new JsonFoodRepository("src/data/entries.json");
