@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { writeFile } from "node:fs/promises";
 import { stringify } from "node:querystring";
+import { randomUUID } from "node:crypto";
 console.log("Calorie Tracker");
 
 type Size = "small" | "medium" | "large";
@@ -8,6 +9,8 @@ type Size = "small" | "medium" | "large";
 type Unit = "g" | "kg" | "ml" | "l" | "piece" | "packet";
 
 interface FoodEntry {
+  id:string;
+
   food: Food;
 
   amount: number;
@@ -170,8 +173,19 @@ class FoodTracker {
     this.entries = entries;
   }
 
-  public add(entry: FoodEntry): void {
-    this.entries.push(entry);
+  // public add(entry: FoodEntry): void {
+  //   this.entries.push(entry);
+  // }
+
+  public add(entry: FoodEntry): FoodEntry {
+    const newEntry = {
+        ...entry,
+        id: randomUUID(),
+    };
+
+    this.entries.push(newEntry);
+
+    return newEntry;
   }
 
   public getToday(): FoodEntry[] {
@@ -404,7 +418,13 @@ class JsonFoodRepository implements FoodRepository {
     }
 
     async save(entry: FoodEntry): Promise<void> {
-      
+        const existingData = await this.findAll();
+
+        existingData.push(entry);
+
+        const entryContent = JSON.stringify(existingData, null, 2);
+
+        await writeFile(this.filePath, entryContent, "utf-8");
     }
 }
 
