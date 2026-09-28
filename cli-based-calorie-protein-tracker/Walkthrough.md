@@ -844,7 +844,7 @@ If the project only needs six files, we'll use six files.
 
 Architecture is a tool, not a religion.
 
- 1. Phase 14 — Testing
+## Phase 14 — Testing
 
 Now we test actual behavior.
 
@@ -869,7 +869,8 @@ Unit testing
 Test cases
 Edge cases
 Testable architecture
-17. Phase 15 — Final Product
+
+## Phase 15 — Final Product
 
 The final CLI should support:
 
@@ -1019,9 +1020,11 @@ yet.
 
 Start stupidly simple:
 
+```text
 calorie-tracker/
 └── src/
     └── index.ts
+```
 
 Get the program running.
 

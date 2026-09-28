@@ -58,6 +58,8 @@ interface Food {
 interface FoodRepository {
   save(entry: FoodEntry): Promise<void>;
   findAll(): Promise<FoodEntry[]>;
+  findById(id: string): Promise<FoodEntry | undefined>;
+  delete(id: string): Promise<void>;
 }
 
 class JsonFoodRepository implements FoodRepository {
@@ -81,6 +83,22 @@ class JsonFoodRepository implements FoodRepository {
     existingData.push(entry);
 
     const entryContent = JSON.stringify(existingData, null, 2);
+
+    await writeFile(this.filePath, entryContent, "utf-8");
+  }
+
+  async findById(id: string): Promise<FoodEntry | undefined> {
+    const entries = await this.findAll();
+
+    return entries.find((entry) => entry.id === id); // .find() -> operation we use to locate any particular index in an array
+  }
+
+  async delete(id: string): Promise<void> {
+    const entries = await this.findAll();
+
+    const remainingEntries = entries.filter((entry) => entry.id !== id);
+
+    const entryContent = JSON.stringify(remainingEntries, null, 2);
 
     await writeFile(this.filePath, entryContent, "utf-8");
   }
@@ -239,7 +257,6 @@ class FoodTracker {
   }
 }
 
-
 //-------------------------------------------------- PHASE 7 ----------------------------------------------------------------
 
 // Repository is responsible for talking to the actual storage.
@@ -285,14 +302,7 @@ try {
     throw new Error("Amount must be greater than 0");
   }
 
-  const validUnits: Unit[] = [
-    "g",
-    "kg",
-    "ml",
-    "l",
-    "piece",
-    "packet",
-  ];
+  const validUnits: Unit[] = ["g", "kg", "ml", "l", "piece", "packet"];
 
   if (!validUnits.includes(unitInput as Unit)) {
     throw new Error("Units must be appropriate");
@@ -348,13 +358,11 @@ try {
   await repository.save(newEntry);
 
   console.log(`Total calories: ${tracker.getTotalCalories()} kcal`);
-
 } catch (e) {
   if (e instanceof Error) {
     console.error(e.message);
   }
 }
-
 
 // phase 5 progress/flow - check file phase5.tldr
 
@@ -381,11 +389,7 @@ async function readFoodData(): Promise<Food[]> {
 
 async function saveFoodData(foods: Food[]): Promise<void> {
   try {
-    const foodContent = JSON.stringify(
-      foods,
-      null,
-      2,
-    ); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
+    const foodContent = JSON.stringify(foods, null, 2); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
 
     await writeFile("src/data/foods.json", foodContent, "utf-8");
   } catch (e) {
