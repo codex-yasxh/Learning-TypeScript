@@ -1,17 +1,113 @@
 [
   {
-    "name": "Apple",
+    "name": "Egg",
     "nutrition": {
-      "calories": 52,
-      "protein": 0.3
+      "calories": 147,
+      "protein": 13.3
     },
     "nutritionBasis": {
       "amount": 100,
       "unit": "g"
     },
     "servingOptions": {
-      "name": "1 apple",
-      "amount": 182,
+      "name": "1 egg",
+      "amount": 60,
+      "unit": "g"
+    }
+  },
+  {
+    "name": "Banana",
+    "nutrition": {
+      "calories": 89,
+      "protein": 1.1
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "g"
+    },
+    "servingOptions": {
+      "name": "1 banana",
+      "amount": 100,
+      "unit": "g"
+    }
+  },
+  {
+    "name": "Milk",
+    "nutrition": {
+      "calories": 61,
+      "protein": 3.2
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "ml"
+    },
+    "servingOptions": {
+      "name": "1 glass",
+      "amount": 250,
+      "unit": "ml"
+    }
+  },
+  {
+    "name": "Chicken Breast",
+    "nutrition": {
+      "calories": 120,
+      "protein": 22.5
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "g"
+    },
+    "servingOptions": {
+      "name": "1 serving",
+      "amount": 100,
+      "unit": "g"
+    }
+  },
+  {
+    "name": "Chana",
+    "nutrition": {
+      "calories": 360,
+      "protein": 18.5
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "g"
+    },
+    "servingOptions": {
+      "name": "1 serving",
+      "amount": 50,
+      "unit": "g"
+    }
+  },
+  {
+    "name": "Peanut",
+    "nutrition": {
+      "calories": 567,
+      "protein": 23.7
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "g"
+    },
+    "servingOptions": {
+      "name": "1 handful",
+      "amount": 30,
+      "unit": "g"
+    }
+  },
+  {
+    "name": "Soya Chunks",
+    "nutrition": {
+      "calories": 345,
+      "protein": 52
+    },
+    "nutritionBasis": {
+      "amount": 100,
+      "unit": "g"
+    },
+    "servingOptions": {
+      "name": "1 serving",
+      "amount": 50,
       "unit": "g"
     }
   }

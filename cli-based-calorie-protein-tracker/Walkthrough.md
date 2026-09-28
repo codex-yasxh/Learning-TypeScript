@@ -531,7 +531,7 @@ This is where TypeScript starts interacting with the real world.
 
 ---
 
-Phase 7 — Repository
+## Phase 7 — Repository
 
 Now we notice something:
 

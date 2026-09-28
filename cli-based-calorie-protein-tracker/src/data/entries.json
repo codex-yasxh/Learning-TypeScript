@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "food": {
+      "name": "Apple",
+      "nutrition": {
+        "calories": 52,
+        "protein": 0.3
+      },
+      "nutritionBasis": {
+        "amount": 100,
+        "unit": "g"
+      },
+      "servingOptions": {
+        "name": "1 apple",
+        "amount": 182,
+        "unit": "g"
+      }
+    },
+    "amount": 1,
+    "unit": "piece"
+  },
+  {
+    "food": {
+      "name": "Egg",
+      "nutrition": {
+        "calories": 147,
+        "protein": 13.3
+      },
+      "nutritionBasis": {
+        "amount": 100,
+        "unit": "g"
+      },
+      "servingOptions": {
+        "name": "1 egg",
+        "amount": 60,
+        "unit": "g"
+      }
+    },
+    "amount": 3,
+    "unit": "piece"
+  },
+  {
+    "food": {
+      "name": "Egg",
+      "nutrition": {
+        "calories": 147,
+        "protein": 13.3
+      },
+      "nutritionBasis": {
+        "amount": 100,
+        "unit": "g"
+      },
+      "servingOptions": {
+        "name": "1 egg",
+        "amount": 60,
+        "unit": "g"
+      }
+    },
+    "amount": 3,
+    "unit": "piece"
+  }
+]

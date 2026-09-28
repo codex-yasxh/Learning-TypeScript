@@ -233,6 +233,7 @@ try {
 
   // const foods: Food[] = [egg]; earlier we did this.
   const foods = await readFoodData();
+    // console.log(foods);
 
   const selectedFood = foods.find(
     (food) => food.name.toLowerCase() === foodName.toLowerCase(),
@@ -264,11 +265,12 @@ try {
 
   const entries = await readEntries();
 
+
   const tracker = new FoodTracker(2500, entries);
 
   tracker.add(entry);
 
-  console.log(tracker.getToday());
+  // console.log(tracker.getToday());
 
   await saveEntries(tracker.getToday());
 
