@@ -1,23 +1,22 @@
 import { readFile } from "node:fs/promises";
 import { writeFile } from "node:fs/promises";
-import { stringify } from "node:querystring";
 import { randomUUID } from "node:crypto";
+
 console.log("Calorie Tracker");
 
 type Size = "small" | "medium" | "large";
 
 type Unit = "g" | "kg" | "ml" | "l" | "piece" | "packet";
 
-interface FoodEntry {
-  id:string;
-
+interface NewFoodEntry {
   food: Food;
-
   amount: number;
-
   unit: Unit;
-
   size?: Size;
+}
+
+interface FoodEntry extends NewFoodEntry {
+  id: string;
 }
 
 // means:
@@ -54,6 +53,37 @@ interface Food {
 
     unit: Unit;
   };
+}
+
+interface FoodRepository {
+  save(entry: FoodEntry): Promise<void>;
+  findAll(): Promise<FoodEntry[]>;
+}
+
+class JsonFoodRepository implements FoodRepository {
+  private filePath: string;
+
+  constructor(filePath: string) {
+    this.filePath = filePath;
+  }
+
+  async findAll(): Promise<FoodEntry[]> {
+    const data = await readFile(this.filePath, "utf-8");
+
+    const entries: FoodEntry[] = JSON.parse(data);
+
+    return entries;
+  }
+
+  async save(entry: FoodEntry): Promise<void> {
+    const existingData = await this.findAll();
+
+    existingData.push(entry);
+
+    const entryContent = JSON.stringify(existingData, null, 2);
+
+    await writeFile(this.filePath, entryContent, "utf-8");
+  }
 }
 
 // Why Interface not class
@@ -108,7 +138,7 @@ interface Food {
 
 // and access both nutritionBasis and servingOptions.
 
-function calculateCalories(foodEntry: FoodEntry): number {
+function calculateCalories(foodEntry: NewFoodEntry): number {
   // no need to pass both interfaces, coz Foodentry already have the FOOD
 
   const amount = getAmountInNutritionBasis(foodEntry);
@@ -119,7 +149,7 @@ function calculateCalories(foodEntry: FoodEntry): number {
   );
 }
 
-function getAmountInNutritionBasis(foodEntry: FoodEntry): number {
+function getAmountInNutritionBasis(foodEntry: NewFoodEntry): number {
   let weight: number;
 
   if (foodEntry.unit === foodEntry.food.nutritionBasis.unit) {
@@ -177,10 +207,10 @@ class FoodTracker {
   //   this.entries.push(entry);
   // }
 
-  public add(entry: FoodEntry): FoodEntry {
-    const newEntry = {
-        ...entry,
-        id: randomUUID(),
+  public add(entry: NewFoodEntry): FoodEntry {
+    const newEntry: FoodEntry = {
+      ...entry,
+      id: randomUUID(),
     };
 
     this.entries.push(newEntry);
@@ -209,6 +239,16 @@ class FoodTracker {
   }
 }
 
+
+//-------------------------------------------------- PHASE 7 ----------------------------------------------------------------
+
+// Repository is responsible for talking to the actual storage.
+
+// FoodTracker doesn't need to know whether the data is coming from JSON,
+// SQLite, a database, etc.
+
+const repository = new JsonFoodRepository("src/data/entries.json");
+
 // Reading CLI inputs
 
 // console.log(process.argv); // remember all it's values are underlying strings so we'd need parsing and validation.
@@ -226,6 +266,11 @@ try {
   // if (command !== "add") {
   //   throw new Error(`Unknown command: ${command}`);
   // }
+
+  if (command !== "add") {
+    throw new Error(`Unknown command: ${command}`);
+  }
+
   if (!foodName || !amountInput || !unitInput) {
     throw new Error("Usage: add <food> <amount> <unit>");
   }
@@ -235,19 +280,28 @@ try {
   if (Number.isNaN(amount)) {
     throw new Error("Amount must be a valid number");
   }
+
   if (amount <= 0) {
     throw new Error("Amount must be greater than 0");
   }
 
-  const validUnits = ["g", "kg", "ml", "l", "piece", "packet"];
+  const validUnits: Unit[] = [
+    "g",
+    "kg",
+    "ml",
+    "l",
+    "piece",
+    "packet",
+  ];
 
-  if (!validUnits.includes(unitInput)) {
+  if (!validUnits.includes(unitInput as Unit)) {
     throw new Error("Units must be appropriate");
   }
 
   // const foods: Food[] = [egg]; earlier we did this.
   const foods = await readFoodData();
-    // console.log(foods);
+
+  // console.log(foods);
 
   const selectedFood = foods.find(
     (food) => food.name.toLowerCase() === foodName.toLowerCase(),
@@ -259,7 +313,7 @@ try {
 
   // 2. Create a FoodEntry
 
-  const entry: FoodEntry = {
+  const entry: NewFoodEntry = {
     food: selectedFood,
 
     amount: amount,
@@ -277,23 +331,30 @@ try {
 
   console.log(`Calories: ${calories} kcal`);
 
-  const entries = await readEntries();
+  // Read existing entries through the repository
 
+  const entries = await repository.findAll();
 
   const tracker = new FoodTracker(2500, entries);
 
-  tracker.add(entry);
-
   // console.log(tracker.getToday());
 
-  await saveEntries(tracker.getToday());
+  // FoodTracker creates the ID and stores the new entry in memory
+
+  const newEntry = tracker.add(entry);
+
+  // Repository persists the newly created entry
+
+  await repository.save(newEntry);
 
   console.log(`Total calories: ${tracker.getTotalCalories()} kcal`);
+
 } catch (e) {
   if (e instanceof Error) {
     console.error(e.message);
   }
 }
+
 
 // phase 5 progress/flow - check file phase5.tldr
 
@@ -305,19 +366,26 @@ try {
 async function readFoodData(): Promise<Food[]> {
   try {
     const data = await readFile("src/data/foods.json", "utf-8");
+
     const foods: Food[] = JSON.parse(data);
+
     return foods;
   } catch (e) {
     if (e instanceof Error) {
       console.error("Error reading food data:", e.message);
     }
+
     return [];
   }
 }
 
 async function saveFoodData(foods: Food[]): Promise<void> {
   try {
-    const foodContent = JSON.stringify(foods, null, 2); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
+    const foodContent = JSON.stringify(
+      foods,
+      null,
+      2,
+    ); // .stringify(foods, null, 2) makes it human-readable and 2 means indentation of two spaces.
 
     await writeFile("src/data/foods.json", foodContent, "utf-8");
   } catch (e) {
@@ -326,6 +394,7 @@ async function saveFoodData(foods: Food[]): Promise<void> {
     }
   }
 }
+
 // We have proven:
 
 // foods.json
@@ -367,14 +436,18 @@ async function readEntries(): Promise<FoodEntry[]> {
   // read entries.json
   // JSON.parse()
   // return FoodEntry[]
+
   try {
     const data = await readFile("src/data/entries.json", "utf-8");
+
     const entries: FoodEntry[] = JSON.parse(data);
+
     return entries;
   } catch (e) {
     if (e instanceof Error) {
       console.error("Error reading entries data:", e.message);
     }
+
     return []; // issue !! fix it later.
   }
 }
@@ -382,6 +455,7 @@ async function readEntries(): Promise<FoodEntry[]> {
 async function saveEntries(entries: FoodEntry[]): Promise<void> {
   // JSON.stringify()
   // write entries.json
+
   try {
     const entryContent = JSON.stringify(entries, null, 2);
 
@@ -395,37 +469,3 @@ async function saveEntries(entries: FoodEntry[]): Promise<void> {
 
 // one learning : we are using operations in our program for reading n writing so to our constructor read the info which is a sync operation
 // so we are using Load before constructor and also async IIFE is best.
-
-
-//-------------------------------------------------- PHASE 7 ----------------------------------------------------------------
-
-interface FoodRepository{
-  save(entry: FoodEntry): Promise<void>;
-  findAll(): Promise<FoodEntry[]>;
-}
-
-class JsonFoodRepository implements FoodRepository {
-    private filePath: string;
-
-    constructor(filePath: string) {
-        this.filePath = filePath;
-    }
-
-    async findAll(): Promise<FoodEntry[]> {
-      const data = await readFile(this.filePath, "utf-8");
-      const entries: FoodEntry[] = JSON.parse(data);
-      return entries;
-    }
-
-    async save(entry: FoodEntry): Promise<void> {
-        const existingData = await this.findAll();
-
-        existingData.push(entry);
-
-        const entryContent = JSON.stringify(existingData, null, 2);
-
-        await writeFile(this.filePath, entryContent, "utf-8");
-    }
-}
-
-const repository = new JsonFoodRepository("src/data/entries.json");
