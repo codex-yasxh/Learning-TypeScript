@@ -1,1 +1,4 @@
+# to put files in this file use : *filename and for directory : **/dir_name
+
 **/node_modules
+*.tldr
