@@ -20,5 +20,27 @@
     "unit": "piece",
     "id": "5ad90325-a202-4b58-bee6-327aabee3f43",
     "createdAt": "2026-09-29T15:18:29.894Z"
+  },
+  {
+    "food": {
+      "name": "Egg",
+      "nutrition": {
+        "calories": 147,
+        "protein": 13.3
+      },
+      "nutritionBasis": {
+        "amount": 100,
+        "unit": "g"
+      },
+      "servingOptions": {
+        "name": "1 egg",
+        "amount": 60,
+        "unit": "g"
+      }
+    },
+    "amount": 2,
+    "unit": "piece",
+    "id": "fd6b4b81-7664-41ff-b47d-4fdbc424a36e",
+    "createdAt": "2026-10-02T05:18:05.877Z"
   }
 ]
